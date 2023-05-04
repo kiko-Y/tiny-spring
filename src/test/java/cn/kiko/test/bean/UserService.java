@@ -10,7 +10,25 @@ import org.slf4j.LoggerFactory;
 public class UserService {
     public static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
+    private String name;
+
+    public UserService(String name) {
+        this.name = name;
+    }
+
+    public UserService() {
+
+    }
+
+
     public void queryUserInfo() {
-        LOGGER.info("查询用户信息");
+        LOGGER.info("查询用户信息 {}", name);
+    }
+
+    @Override
+    public String toString() {
+        return "UserService{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }
