@@ -1,4 +1,4 @@
-package cn.kiko.springframework.beans.utils;
+package cn.kiko.springframework.utils;
 
 import java.lang.reflect.Field;
 
