@@ -8,29 +8,44 @@ import org.slf4j.LoggerFactory;
  * Created on 2023-04-26
  */
 public class UserService {
-    public static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+        private String uId;
+        private String company;
+        private String location;
+        private UserDao userDao;
 
-    private String uId;
+        public String queryUserInfo() {
+            return userDao.queryUserName(uId) + "," + company + "," + location;
+        }
 
-    private UserDao userDao;
+        public String getuId() {
+            return uId;
+        }
 
-    public void queryUserInfo() {
-        System.out.println("查询用户信息：" + userDao.queryUserName(uId));
-    }
+        public void setuId(String uId) {
+            this.uId = uId;
+        }
 
-    public String getuId() {
-        return uId;
-    }
+        public String getCompany() {
+            return company;
+        }
 
-    public void setuId(String uId) {
-        this.uId = uId;
-    }
+        public void setCompany(String company) {
+            this.company = company;
+        }
 
-    public UserDao getUserDao() {
-        return userDao;
-    }
+        public String getLocation() {
+            return location;
+        }
 
-    public void setUserDao(UserDao userDao) {
-        this.userDao = userDao;
-    }
+        public void setLocation(String location) {
+            this.location = location;
+        }
+
+        public UserDao getUserDao() {
+            return userDao;
+        }
+
+        public void setUserDao(UserDao userDao) {
+            this.userDao = userDao;
+        }
 }

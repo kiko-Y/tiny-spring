@@ -5,12 +5,6 @@ package cn.kiko.springframework.utils;
  * Created on 2023-05-05
  */
 public class ClassUtils {
-    public static void main(String[] args) {
-        System.out.println(getDefaultClassLoader());
-        System.out.println(Thread.currentThread().getContextClassLoader());
-        System.out.println(ClassUtils.class.getClassLoader());
-        System.out.println(ClassLoader.getSystemClassLoader());
-    }
 
     public static ClassLoader getDefaultClassLoader() {
         ClassLoader cl = null;

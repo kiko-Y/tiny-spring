@@ -16,19 +16,6 @@ import cn.hutool.core.lang.Assert;
  * Created on 2023-05-05
  */
 public class UrlResource implements Resource {
-
-    public static void main(String[] args) throws IOException {
-        URL url = new URL("https://www.baidu.com");
-//        URL url = new URL("logback.xml");
-        URLConnection urlConnection = url.openConnection();
-        InputStream is = urlConnection.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            System.out.println(line);
-        }
-    }
-
     private final URL url;
 
 

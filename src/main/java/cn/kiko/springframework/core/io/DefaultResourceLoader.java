@@ -13,13 +13,6 @@ import cn.hutool.core.lang.Assert;
  * Created on 2023-05-05
  */
 public class DefaultResourceLoader implements ResourceLoader {
-    public static void main(String[] args) throws IOException {
-        URL resource = ClassLoader.getSystemClassLoader().getResource("logback.xml");
-        InputStream is = resource.openConnection().getInputStream();
-        byte[] bytes = is.readAllBytes();
-        System.out.println(new String(bytes, StandardCharsets.UTF_8));
-    }
-
     @Override
     public Resource getResource(String location) {
         Assert.notNull(location, "Location must not be null");
