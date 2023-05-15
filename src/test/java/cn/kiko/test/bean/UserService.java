@@ -3,49 +3,63 @@ package cn.kiko.test.bean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.kiko.springframework.beans.factory.DisposableBean;
+import cn.kiko.springframework.beans.factory.InitializingBean;
+
 /**
  * @author shijiayue <shijiayue@kuaishou.com>
  * Created on 2023-04-26
  */
-public class UserService {
-        private String uId;
-        private String company;
-        private String location;
-        private UserDao userDao;
+public class UserService implements InitializingBean, DisposableBean {
+    private String uId;
+    private String company;
+    private String location;
+    private UserDao userDao;
 
-        public String queryUserInfo() {
-            return userDao.queryUserName(uId) + "," + company + "," + location;
-        }
+    @Override
+    public void destroy() throws Exception {
+        System.out.println("执行：UserService.destroy");
+    }
 
-        public String getuId() {
-            return uId;
-        }
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        System.out.println("执行：UserService.afterPropertiesSet");
+    }
 
-        public void setuId(String uId) {
-            this.uId = uId;
-        }
+    public String queryUserInfo() {
+        return userDao.queryUserName(uId) + "," + company + "," + location;
+    }
 
-        public String getCompany() {
-            return company;
-        }
+    public String getuId() {
+        return uId;
+    }
 
-        public void setCompany(String company) {
-            this.company = company;
-        }
+    public void setuId(String uId) {
+        this.uId = uId;
+    }
 
-        public String getLocation() {
-            return location;
-        }
+    public String getCompany() {
+        return company;
+    }
 
-        public void setLocation(String location) {
-            this.location = location;
-        }
+    public void setCompany(String company) {
+        this.company = company;
+    }
 
-        public UserDao getUserDao() {
-            return userDao;
-        }
+    public String getLocation() {
+        return location;
+    }
 
-        public void setUserDao(UserDao userDao) {
-            this.userDao = userDao;
-        }
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public UserDao getUserDao() {
+        return userDao;
+    }
+
+    public void setUserDao(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
 }
