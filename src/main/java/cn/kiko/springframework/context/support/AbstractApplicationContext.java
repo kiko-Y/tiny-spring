@@ -6,6 +6,7 @@ import cn.kiko.springframework.beans.BeansException;
 import cn.kiko.springframework.beans.factory.ConfigurableListableBeanFactory;
 import cn.kiko.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import cn.kiko.springframework.beans.factory.config.BeanPostProcessor;
+import cn.kiko.springframework.beans.factory.config.ConfigurableBeanFactory;
 import cn.kiko.springframework.context.ConfigurableApplicationContext;
 import cn.kiko.springframework.core.io.DefaultResourceLoader;
 
@@ -23,16 +24,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         // 2. 获取 BeanFactory
         ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 
-        // 3. 在 Bean 实例化之前，执行 BeanFactoryPostProcessor (Invoke factory processors registered as beans in the context.)
+
+        // 3. 添加 ApplicationContextAwareProcessor，让继承自 ApplicationContextAware 的 Bean 对象都能感知所属的 ApplicationContext
+        beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+
+        // 4. 在 Bean 实例化之前，执行 BeanFactoryPostProcessor (Invoke factory processors registered as beans in the context.)
         invokeBeanFactoryPostProcessors(beanFactory);
 
-        // 4. BeanPostProcessor 需要提前于其他 Bean 对象实例化之前执行注册操作
+        // 5. BeanPostProcessor 需要提前于其他 Bean 对象实例化之前执行注册操作
         registerBeanPostProcessors(beanFactory);
 
-        // 5. 提前实例化单例Bean对象
+        // 6. 提前实例化单例Bean对象
         beanFactory.preInstantiateSingletons();
     }
-
+    
     protected abstract void refreshBeanFactory() throws BeansException;
 
     protected abstract ConfigurableListableBeanFactory getBeanFactory();

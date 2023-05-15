@@ -7,6 +7,7 @@ import cn.kiko.springframework.beans.BeansException;
 import cn.kiko.springframework.beans.factory.config.BeanDefinition;
 import cn.kiko.springframework.beans.factory.config.BeanPostProcessor;
 import cn.kiko.springframework.beans.factory.config.ConfigurableBeanFactory;
+import cn.kiko.springframework.utils.ClassUtils;
 
 /**
  * @author shijiayue <shijiayue@kuaishou.com>
@@ -15,6 +16,7 @@ import cn.kiko.springframework.beans.factory.config.ConfigurableBeanFactory;
 public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
 
 
+    private ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
     /** BeanPostProcessors to apply in createBean */
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
@@ -64,5 +66,9 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
      */
     public List<BeanPostProcessor> getBeanPostProcessors() {
         return this.beanPostProcessors;
+    }
+
+    public ClassLoader getBeanClassLoader() {
+        return beanClassLoader;
     }
 }
