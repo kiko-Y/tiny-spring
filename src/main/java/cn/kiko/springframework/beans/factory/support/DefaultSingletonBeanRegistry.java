@@ -14,6 +14,9 @@ import cn.kiko.springframework.beans.factory.config.SingletonBeanRegistry;
  */
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
+    // 如果根据 name 查cacheMap是null，说明没有查过，如果是NULL_OBJECT说明确实是空对象
+    protected static final Object NULL_OBJECT = new Object();
+
     private Map<String, Object> singletonObjects = new HashMap<>();
 
     private final Map<String, DisposableBean> disposableBeans = new HashMap<>();

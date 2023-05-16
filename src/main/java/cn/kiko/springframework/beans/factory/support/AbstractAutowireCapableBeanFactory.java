@@ -11,7 +11,6 @@ import cn.kiko.springframework.beans.PropertyValue;
 import cn.kiko.springframework.beans.PropertyValues;
 import cn.kiko.springframework.beans.factory.Aware;
 import cn.kiko.springframework.beans.factory.BeanClassLoaderAware;
-import cn.kiko.springframework.beans.factory.BeanFactory;
 import cn.kiko.springframework.beans.factory.BeanFactoryAware;
 import cn.kiko.springframework.beans.factory.BeanNameAware;
 import cn.kiko.springframework.beans.factory.DisposableBean;
@@ -30,6 +29,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     private InstantiationStrategy instantiationStrategy = new CglibSubclassingInstantiationStrategy();
 
+    /**
+     * 创建 bean 对象，进行属性填充和初始化，以及注册销毁方法
+     * @param beanName
+     * @param beanDefinition
+     * @param args
+     * @return
+     * @throws BeansException
+     */
     @Override
     protected Object createBean(String beanName, BeanDefinition beanDefinition, Object[] args) throws BeansException {
         Object bean = null;
@@ -45,17 +52,37 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         // 注册实现了 DisposableBean 接口的 Bean 对象
         registerDisposableBeanIfNecessary(beanName, bean, beanDefinition);
-        addSingleton(beanName, bean);
+
+        if (beanDefinition.isSingleton()) {
+            addSingleton(beanName, bean);
+        }
+
         return bean;
     }
 
+    /**
+     * 注册 bean 的销毁方法
+     * @param beanName
+     * @param bean
+     * @param beanDefinition
+     */
     protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition beanDefinition) {
+
+        // 非 Singleton 类型的 bean 不执行销毁方法
+        if (!beanDefinition.isSingleton()) return;
+
         if (bean instanceof DisposableBean || StrUtil.isNotEmpty(beanDefinition.getDestroyMethodName())) {
             registerDisposableBean(beanName, new DisposableBeanAdapter(bean, beanName, beanDefinition));
         }
     }
 
-
+    /**
+     *  用构造器反射创建 Bean 的 Instance，未进行属性填充和初始化
+     * @param beanDefinition
+     * @param beanName
+     * @param args
+     * @return
+     */
     protected Object createBeanInstance(BeanDefinition beanDefinition, String beanName, Object[] args) {
         Constructor<?> constructorToUse = null;
         Class<?> beanClass = beanDefinition.getBeanClass();
@@ -106,6 +133,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         this.instantiationStrategy = instantiationStrategy;
     }
 
+    /**
+     * 初始化bean：前置操作、初始化、后置操作
+     * @param beanName
+     * @param bean
+     * @param beanDefinition
+     * @return
+     */
     private Object initializeBean(String beanName, Object bean, BeanDefinition beanDefinition) {
 
         if (bean instanceof Aware) {
@@ -135,6 +169,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return wrappedBean;
     }
 
+    /**
+     * 调用初始化方法
+     * @param beanName
+     * @param bean
+     * @param beanDefinition
+     * @throws Exception
+     */
     private void invokeInitMethods(String beanName, Object bean, BeanDefinition beanDefinition) throws Exception {
         // 1. 实现接口 InitializingBean
         if (bean instanceof InitializingBean) {
@@ -152,6 +193,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
     }
 
+    /**
+     * 调用初始化前置处理器
+     * @param existingBean
+     * @param beanName
+     * @return
+     * @throws BeansException
+     */
     @Override
     public Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, String beanName) throws BeansException {
         Object result = existingBean;
@@ -163,6 +211,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return result;
     }
 
+    /**
+     * 调用初始化后置处理器
+     * @param existingBean
+     * @param beanName
+     * @return
+     * @throws BeansException
+     */
     @Override
     public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName) throws BeansException {
         Object result = existingBean;

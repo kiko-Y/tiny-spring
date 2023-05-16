@@ -70,6 +70,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
             String className = bean.getAttribute("class");
             String initMethod = bean.getAttribute("init-method");
             String destroyMethodName = bean.getAttribute("destroy-method");
+            String scope = bean.getAttribute("scope");
             // 获取 Class
             Class<?> clazz = Class.forName(className);
 
@@ -83,6 +84,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
             BeanDefinition beanDefinition = new BeanDefinition(clazz);
             beanDefinition.setInitMethodName(initMethod);
             beanDefinition.setDestroyMethodName(destroyMethodName);
+            if (StrUtil.isNotEmpty(scope) && !(scope.equals(BeanDefinition.SCOPE_PROTOTYPE) || scope.equals(BeanDefinition.SCOPE_SINGLETON))) {
+                throw new BeansException("bean scope error, scope [" + scope + "] not exists");
+            }
+            if (BeanDefinition.SCOPE_PROTOTYPE.equals(scope)) {
+                beanDefinition.setScope(scope);
+            }
 
             // 填充属性
             for (int j = 0; j < bean.getChildNodes().getLength(); j++) {

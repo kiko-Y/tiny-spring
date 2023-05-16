@@ -1,10 +1,12 @@
 package cn.kiko.test;
 
+import java.util.Objects;
+
 import org.junit.Test;
 
-import cn.kiko.springframework.beans.factory.BeanFactory;
+import cn.kiko.springframework.context.ApplicationContext;
 import cn.kiko.springframework.context.support.ClassPathXmlApplicationContext;
-import cn.kiko.test.bean.UserDao;
+import cn.kiko.test.bean.IUserDao;
 import cn.kiko.test.bean.UserService;
 
 /**
@@ -14,21 +16,23 @@ import cn.kiko.test.bean.UserService;
 public class ApiTest {
 
     @Test
-    public void test_xml() {
-        // 1.初始化 BeanFactory
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+    public void testFactoryBean() {
+        ApplicationContext applicationContext =
+                new ClassPathXmlApplicationContext("classpath:spring.xml");
+        IUserDao userDao = applicationContext.getBean("userDao", IUserDao.class);
+        System.out.println(userDao.queryUserName("10002"));
+    }
 
-        applicationContext.registerShutdownHook();
-        // 2. 获取Bean对象调用方法
-        UserService userService = applicationContext.getBean("userService", UserService.class);
-        String result = userService.queryUserInfo();
-        System.out.println("测试结果：" + result);
-
-        System.out.println("userService.getApplicationContext().equals(applicationContext) = "
-                + userService.getApplicationContext().equals(applicationContext));
-        BeanFactory beanFactory = userService.getBeanFactory();
-        UserDao userDao = beanFactory.getBean("userDao", UserDao.class);
-        userDao.queryUserName("10002");
+    @Test
+    public void testUserServiceProto() {
+        ApplicationContext applicationContext =
+                new ClassPathXmlApplicationContext("classpath:spring.xml");
+        UserService userService1 = applicationContext.getBean("userService", UserService.class);
+        UserService userService2 = applicationContext.getBean("userService", UserService.class);
+        System.out.println(userService1.getIUserDao());
+        System.out.println(userService2.getIUserDao());
+        System.out.println("same userDao :" + userService1.getIUserDao().equals(userService2.getIUserDao()));
+        System.out.println("same service :" + userService1.equals(userService2));
     }
 
 }

@@ -12,16 +12,12 @@ import cn.kiko.springframework.context.ApplicationContextAware;
  * @author shijiayue <shijiayue@kuaishou.com>
  * Created on 2023-04-26
  */
-public class UserService implements BeanNameAware, BeanClassLoaderAware, ApplicationContextAware, BeanFactoryAware {
-
-    private ApplicationContext applicationContext;
-
-    private BeanFactory beanFactory;
+public class UserService {
 
     private String uId;
     private String company;
     private String location;
-    private UserDao userDao;
+    private IUserDao userDao;
 
     public String queryUserInfo() {
         return userDao.queryUserName(uId) + "," + company + "," + location;
@@ -51,39 +47,11 @@ public class UserService implements BeanNameAware, BeanClassLoaderAware, Applica
         this.location = location;
     }
 
-    public UserDao getUserDao() {
+    public IUserDao getIUserDao() {
         return userDao;
     }
 
-    public void setUserDao(UserDao userDao) {
+    public void setIUserDao(IUserDao userDao) {
         this.userDao = userDao;
-    }
-
-    @Override
-    public void setBeanClassLoader(ClassLoader classLoader) {
-        System.out.println("classLoader = " + classLoader);
-    }
-
-    @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        System.out.println("bean name = " + name);
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
-    public ApplicationContext getApplicationContext() {
-        return applicationContext;
-    }
-
-    public BeanFactory getBeanFactory() {
-        return beanFactory;
     }
 }
