@@ -1,7 +1,6 @@
 package cn.kiko.springframework.beans.factory.support;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -54,7 +53,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         registerDisposableBeanIfNecessary(beanName, bean, beanDefinition);
 
         if (beanDefinition.isSingleton()) {
-            addSingleton(beanName, bean);
+            registerSingleton(beanName, bean);
         }
 
         return bean;

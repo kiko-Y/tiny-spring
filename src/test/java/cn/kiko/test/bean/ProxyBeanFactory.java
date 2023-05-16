@@ -19,12 +19,11 @@ public class ProxyBeanFactory implements FactoryBean<IUserDao> {
                 new InvocationHandler() {
                     @Override
                     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-
+//                        System.out.println(this.getClass());
                         // 添加排除方法
+                        System.out.println(proxy.getClass().getName());
                         if ("toString".equals(method.getName())) return this.toString();
-
-                        if ("equals".equals(method.getName())) return this.equals(args[0]);
+                        if ("equals".equals(method.getName())) return proxy.equals(args[0]);
 
                         if ("hashCode".equals(method.getName())) return this.hashCode();
 

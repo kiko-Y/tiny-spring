@@ -12,4 +12,11 @@
         <property name="userDao" ref="userDao"/>
     </bean>
 
+    <bean class="cn.kiko.test.event.ContextRefreshedEventListener"/>
+
+    <bean class="cn.kiko.test.event.CustomEventListener"/>
+
+    <bean class="cn.kiko.test.event.ContextClosedEventListener"/>
+
+
 </beans>
