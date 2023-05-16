@@ -1,50 +1,35 @@
 package cn.kiko.test;
 
-import java.util.Objects;
-
 import org.junit.Test;
 
-import cn.kiko.springframework.context.ApplicationContext;
-import cn.kiko.springframework.context.support.ClassPathXmlApplicationContext;
-import cn.kiko.test.bean.IUserDao;
-import cn.kiko.test.bean.UserService;
-import cn.kiko.test.event.CustomEvent;
+import cn.kiko.springframework.aop.AdvisedSupport;
+import cn.kiko.springframework.aop.TargetSource;
+import cn.kiko.springframework.aop.aspectj.AspectJExpressionPointcut;
+import cn.kiko.springframework.aop.framework.Cglib2AopProxy;
+import cn.kiko.springframework.aop.framework.JdkDynamicAopProxy;
+import cn.kiko.test.aop.IUserService;
+import cn.kiko.test.aop.UserService;
+import cn.kiko.test.aop.UserServiceInterceptor;
 
 /**
  * @author shijiayue <shijiayue@kuaishou.com>
  * Created on 2023-05-04
  */
 public class ApiTest {
-
     @Test
-    public void testFactoryBean() {
-        ApplicationContext applicationContext =
-                new ClassPathXmlApplicationContext("classpath:spring.xml");
-        IUserDao userDao = applicationContext.getBean("userDao", IUserDao.class);
-        System.out.println(userDao.queryUserName("10002"));
-    }
+    public void testDynamicProxy() {
+        IUserService userService = new UserService();
 
-    @Test
-    public void testUserServiceProto() {
-        ApplicationContext applicationContext =
-                new ClassPathXmlApplicationContext("classpath:spring.xml");
-        UserService userService1 = applicationContext.getBean("userService", UserService.class);
-        UserService userService2 = applicationContext.getBean("userService", UserService.class);
-        System.out.println(userService1.getIUserDao());
-        System.out.println(userService2.getIUserDao());
-        System.out.println(userService2.getIUserDao().hashCode());
-        System.out.println(userService2.getIUserDao().hashCode());
-//        System.out.println("same userDao :" + userService1.getIUserDao().equals(userService2.getIUserDao()));
-        System.out.println(userService1.getIUserDao().getClass().getName());
-        System.out.println("same service :" + userService1.equals(userService2));
-    }
+        AdvisedSupport advisedSupport = new AdvisedSupport();
+        advisedSupport.setTargetSource(new TargetSource(userService));
+        advisedSupport.setMethodMatcher(new AspectJExpressionPointcut("execution(* cn.kiko.test.aop.IUserService.*(..))"));
+        advisedSupport.setMethodInterceptor(new UserServiceInterceptor());
 
-    @Test
-    public void testEvent() {
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        applicationContext.publishEvent(new CustomEvent(applicationContext, 1019129009086763L, "成功了！"));
+        IUserService proxyJdk = (IUserService) new JdkDynamicAopProxy(advisedSupport).getProxy();
+        System.out.println("测试结果: " + proxyJdk.queryUserInfo());
 
-        applicationContext.registerShutdownHook();
+        IUserService proxyCglib = (IUserService) new Cglib2AopProxy(advisedSupport).getProxy();
+        System.out.println("测试结果: " + proxyCglib.queryUserInfo());
     }
 
 }
