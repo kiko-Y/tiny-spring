@@ -3,21 +3,14 @@
 
 <beans>
 
-
-    <bean id="userService" class="cn.kiko.test.aop.UserService"/>
-
-    <bean class="cn.kiko.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
-
-    <bean id="beforeAdvice" class="cn.kiko.test.aop.UserServiceBeforeAdvice"/>
-
-    <bean id="methodInterceptor" class="cn.kiko.springframework.aop.framework.adapter.MethodBeforeAdviceInterceptor">
-        <property name="advice" ref="beforeAdvice"/>
+    <component-scan base-package="cn.kiko.test.aop"/>
+    <bean id="propertyPlaceholderConfigurer" class="cn.kiko.springframework.beans.factory.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:token.properties"/>
+    </bean>
+    <bean id="userService" class="cn.kiko.test.aop.UserService">
+        <property name="token" value="${token}"/>
     </bean>
 
-    <bean id="pointcutAdvisor" class="cn.kiko.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor">
-        <property name="expression" value="execution(* cn.kiko.test.aop.IUserService.*(..))"/>
-        <property name="advice" ref="methodInterceptor"/>
-    </bean>
 
 
 </beans>

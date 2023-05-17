@@ -1,20 +1,25 @@
 package cn.kiko.springframework.beans.factory.xml;
 
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Objects;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.w3c.dom.NodeList;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.XmlUtil;
 import cn.kiko.springframework.beans.BeansException;
 import cn.kiko.springframework.beans.PropertyValue;
 import cn.kiko.springframework.beans.factory.config.BeanDefinition;
 import cn.kiko.springframework.beans.factory.config.BeanReference;
 import cn.kiko.springframework.beans.factory.support.AbstractBeanDefinitionReader;
 import cn.kiko.springframework.beans.factory.support.BeanDefinitionRegistry;
+import cn.kiko.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import cn.kiko.springframework.core.io.Resource;
 import cn.kiko.springframework.core.io.ResourceLoader;
 
@@ -43,7 +48,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
     public void loadBeanDefinitions(Resource resource) throws BeansException {
         try (InputStream inputStream = resource.getInputStream()) {
             doLoadBeanDefinitions(inputStream);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException | DocumentException e) {
             throw new BeansException("IOException parsing XML document from " + resource, e);
         }
     }
@@ -53,24 +58,31 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
      * @param inputStream xml 的输入流
      * @throws ClassNotFoundException 无法加载Bean 对应的类不存在
      */
-    private void doLoadBeanDefinitions(InputStream inputStream) throws ClassNotFoundException {
-        Document doc = XmlUtil.readXML(inputStream);
-        Element root = doc.getDocumentElement();
-        NodeList childNodes = root.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            // 判断元素 是否是blank
-            if (!(childNodes.item(i) instanceof Element)) continue;
-            // 判断对象 是否是bean
-            if (!"bean".equals(childNodes.item(i).getNodeName())) continue;
+    private void doLoadBeanDefinitions(InputStream inputStream) throws ClassNotFoundException, DocumentException {
+        SAXReader reader = new SAXReader();
+        Document doc = reader.read(inputStream);
+        Element root = doc.getRootElement();
 
-            // 解析标签
-            Element bean = (Element) childNodes.item(i);
-            String id = bean.getAttribute("id");
-            String name = bean.getAttribute("name");
-            String className = bean.getAttribute("class");
-            String initMethod = bean.getAttribute("init-method");
-            String destroyMethodName = bean.getAttribute("destroy-method");
-            String scope = bean.getAttribute("scope");
+
+        Element componentScan = root.element("component-scan");
+
+        if (Objects.nonNull(componentScan)) {
+            String scanPath = componentScan.attributeValue("base-package");
+            if (StrUtil.isEmpty(scanPath)) {
+                throw new BeansException("The value of base-package attribute can not be empty or null");
+            }
+            scanPackage(scanPath);
+        }
+
+        List<Element> beanList = root.elements("bean");
+        for (Element bean : beanList) {
+
+            String id = bean.attributeValue("id");
+            String name = bean.attributeValue("name");
+            String className = bean.attributeValue("class");
+            String initMethod = bean.attributeValue("init-method");
+            String destroyMethodName = bean.attributeValue("destroy-method");
+            String scope = bean.attributeValue("scope");
             // 获取 Class
             Class<?> clazz = Class.forName(className);
 
@@ -91,18 +103,17 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
                 beanDefinition.setScope(scope);
             }
 
+
+            List<Element> propertyList = bean.elements("property");
+
             // 填充属性
-            for (int j = 0; j < bean.getChildNodes().getLength(); j++) {
-                if (!(bean.getChildNodes().item(j) instanceof Element)) continue;
-                if (!"property".equals(bean.getChildNodes().item(j).getNodeName())) continue;
-                // 解析标签
-                Element property = (Element) bean.getChildNodes().item(j);
+            for (Element property : propertyList) {
                 // 属性名
-                String attrName = property.getAttribute("name");
+                String attrName = property.attributeValue("name");
                 // 属性值
-                String attrValue = property.getAttribute("value");
+                String attrValue = property.attributeValue("value");
                 // 引用
-                String attrRef = property.getAttribute("ref");
+                String attrRef = property.attributeValue("ref");
 
                 PropertyValue propertyValue = new PropertyValue(attrName,
                         StrUtil.isNotEmpty(attrRef) ? new BeanReference(attrRef) : attrValue);
@@ -118,6 +129,17 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
             getRegistry().registerBeanDefinition(beanName, beanDefinition);
 
         }
+    }
+
+    /**
+     * 扫描包
+     * @param scanPath 包路径
+     */
+    private void scanPackage(String scanPath) {
+        String[] basePackages = StrUtil.splitToArray(StrUtil.removeAll(scanPath, ' '), ',');
+        ClassPathBeanDefinitionScanner scanner =
+                new ClassPathBeanDefinitionScanner(getRegistry());
+        scanner.doScan(basePackages);
     }
 
     @Override
