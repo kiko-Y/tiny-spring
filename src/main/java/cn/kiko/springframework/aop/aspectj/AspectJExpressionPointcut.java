@@ -10,13 +10,14 @@ import org.aspectj.weaver.tools.PointcutPrimitive;
 
 import cn.kiko.springframework.aop.ClassFilter;
 import cn.kiko.springframework.aop.MethodMatcher;
-import cn.kiko.springframework.aop.PointCut;
+import cn.kiko.springframework.aop.Pointcut;
 
 /**
+ * 切入点匹配器
  * @author shijiayue <shijiayue@kuaishou.com>
  * Created on 2023-05-16
  */
-public class AspectJExpressionPointcut implements PointCut, ClassFilter, MethodMatcher {
+public class AspectJExpressionPointcut implements Pointcut, ClassFilter, MethodMatcher {
     private static final Set<PointcutPrimitive> SUPPORTED_PRIMITIVES = new HashSet<>();
 
     static {

@@ -1,10 +1,11 @@
 package cn.kiko.springframework.aop;
 
 /**
+ * 切入点匹配
  * @author shijiayue <shijiayue@kuaishou.com>
  * Created on 2023-05-16
  */
-public interface PointCut  {
+public interface Pointcut {
 
     /**
      * Return the ClassFilter for this pointcut.

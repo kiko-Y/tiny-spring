@@ -18,6 +18,7 @@ import cn.kiko.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import cn.kiko.springframework.beans.factory.config.BeanDefinition;
 import cn.kiko.springframework.beans.factory.config.BeanPostProcessor;
 import cn.kiko.springframework.beans.factory.config.BeanReference;
+import cn.kiko.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 
 /**
  * @author shijiayue <shijiayue@kuaishou.com>
@@ -40,7 +41,22 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     protected Object createBean(String beanName, BeanDefinition beanDefinition, Object[] args) throws BeansException {
         Object bean = null;
         try {
-            bean = createBeanInstance(beanDefinition, beanName, args);
+            try {
+                bean = resolveBeforeInstantiation(beanName, beanDefinition);
+                // 判断是否返回代理 Bean 对象
+                if (null != bean) {
+                    return bean;
+                }
+                // 没有进行代理
+                // 实例化 Bean
+                bean = createBeanInstance(beanDefinition, beanName, args);
+                // 给 Bean 填充属性
+                applyPropertyValues(beanName, bean, beanDefinition);
+                // 执行 Bean 的初始化方法和 BeanPostProcessor 的前置和后置处理方法
+                bean = initializeBean(beanName, bean, beanDefinition);
+            } catch (Exception e) {
+                throw new BeansException("Instantiation of bean failed", e);
+            }
             applyPropertyValues(beanName, bean, beanDefinition);
             // 执行 Bean 的初始化方法和 BeanPostProcessor 的前置和后置处理方法
             bean = initializeBean(beanName, bean, beanDefinition);
@@ -57,6 +73,28 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
 
         return bean;
+    }
+
+    protected Object resolveBeforeInstantiation(String beanName, BeanDefinition beanDefinition) {
+        Object bean = applyBeanPostProcessorsBeforeInstantiation(beanDefinition.getBeanClass(), beanName);
+        if (null != bean) {
+            bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
+        }
+        return bean;
+    }
+
+
+    protected Object applyBeanPostProcessorsBeforeInstantiation(Class<?> beanClass, String beanName) {
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            // 找实例化前置处理器
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                // 尝试进行代理
+                Object result = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessBeforeInstantiation(beanClass, beanName);
+                // 不存在切入点，不进行代理
+                if (null != result) return result;
+            }
+        }
+        return null;
     }
 
     /**

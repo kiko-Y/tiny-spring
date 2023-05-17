@@ -3,20 +3,21 @@
 
 <beans>
 
-    <bean id="userDao" class="cn.kiko.test.bean.ProxyBeanFactory"/>
 
-    <bean id="userService" class="cn.kiko.test.bean.UserService" scope="prototype">
-        <property name="uId" value="10001"/>
-        <property name="company" value="腾讯"/>
-        <property name="location" value="深圳"/>
-        <property name="userDao" ref="userDao"/>
+    <bean id="userService" class="cn.kiko.test.aop.UserService"/>
+
+    <bean class="cn.kiko.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+
+    <bean id="beforeAdvice" class="cn.kiko.test.aop.UserServiceBeforeAdvice"/>
+
+    <bean id="methodInterceptor" class="cn.kiko.springframework.aop.framework.adapter.MethodBeforeAdviceInterceptor">
+        <property name="advice" ref="beforeAdvice"/>
     </bean>
 
-    <bean class="cn.kiko.test.event.ContextRefreshedEventListener"/>
-
-    <bean class="cn.kiko.test.event.CustomEventListener"/>
-
-    <bean class="cn.kiko.test.event.ContextClosedEventListener"/>
+    <bean id="pointcutAdvisor" class="cn.kiko.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor">
+        <property name="expression" value="execution(* cn.kiko.test.aop.IUserService.*(..))"/>
+        <property name="advice" ref="methodInterceptor"/>
+    </bean>
 
 
 </beans>
